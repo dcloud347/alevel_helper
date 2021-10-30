@@ -148,7 +148,7 @@ class UserFiles(View):
                 file = Files.objects.create(file=files.name, owner=str(pk), subject=subject, description=description)
                 file.save()
             except IntegrityError:
-                return JsonResponse({'code': 400, 'message': '文件名已存在！'}, status=200)
+                return JsonResponse({'code': 400, 'message': '文件名已存在！'}, status=400)
             user_own = list(Files.objects.filter(owner=pk).all().values())
             return JsonResponse({'code': 200, 'message': 'updated', 'data': user_own}, status=200)
         else:
@@ -159,7 +159,7 @@ class UserFiles(View):
         try:
             file = Files.objects.get(pk=pk)
         except Files.DoesNotExist:
-            return JsonResponse({'code': 404, 'message': '要修改的文件不存在'}, status=200)
+            return JsonResponse({'code': 404, 'message': '要修改的文件不存在'}, status=404)
         if file.owner in logged_in_Users:
             for key, value in data.items():
                 setattr(file, key, value)
@@ -178,5 +178,5 @@ class UserFiles(View):
             else:
                 return JsonResponse({'code': 403, 'message': '请先登录'}, status=403)
         except Files.DoesNotExist:
-            return JsonResponse({'code': 404, 'message': '文件不存在'}, status=200)
+            return JsonResponse({'code': 404, 'message': '文件不存在'}, status=404)
         return JsonResponse({'code': 204, 'message': 'deleted'}, status=204)
