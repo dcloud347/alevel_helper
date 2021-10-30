@@ -18,24 +18,20 @@ class UsersView(View):
         return super(UsersView, self).dispatch(request, *args, **kwargs)
 
     def get(self, request, pk=0):
-        if pk:
-            try:
-                user = Users.objects.get(idcard=pk)
-
-                if user.idcard in logged_in_Users:
-                    user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
-                            "created_time": user.created_time
-                        , "avatar": str(user.avatar)}
-                    return JsonResponse({'code': 200, 'message': '登陆状态', 'data': user}, status=200)
-                else:
-                    user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
-                            "created_time": user.created_time
-                        , "avatar": str(user.avatar)}
-                    return JsonResponse({'code': 200, 'message': '非登陆状态', 'data': user}, status=200)
-            except Users.DoesNotExist:
-                return JsonResponse({'code': 404, 'message': '用户不存在'}, status=200)
-        else:
-            return JsonResponse({'code': 404, 'message': '请传参数'}, status=200)
+        try:
+            user = Users.objects.get(idcard=pk)
+            if user.idcard in logged_in_Users:
+                user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
+                        "created_time": user.created_time
+                    , "avatar": str(user.avatar),"identity":user.identity}
+                return JsonResponse({'code': 200, 'message': '登陆状态', 'data': user}, status=200)
+            else:
+                user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
+                        "created_time": user.created_time
+                    , "avatar": str(user.avatar),"identity":user.identity}
+                return JsonResponse({'code': 200, 'message': '非登陆状态', 'data': user}, status=200)
+        except Users.DoesNotExist:
+            return JsonResponse({'code': 404, 'message': '用户不存在'}, status=200)
 
     def post(self, request, pk=0):
         data = json.loads(request.body)
@@ -66,17 +62,26 @@ class UsersView(View):
     def put(self, request, pk=0):
         data = json.loads(request.body)
         user = Users.objects.get(idcard=str(pk))
-        for key, value in data.items():
-            setattr(user, key, value)
-        user.save()
-        user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
-                "created_time": user.created_time
-            , "avatar": str(user.avatar)}
-        return JsonResponse({'code': 200, 'message': 'updated', 'data': user}, status=200)
+        if data['password_before']==user.password:
+            setattr(user,'password',data['password'])
+            user.save()
+            user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
+                    "created_time": user.created_time
+                , "avatar": str(user.avatar)}
+            return JsonResponse({'code': 200, 'message': 'updated', 'data': user}, status=200)
+        else:
+            return JsonResponse({'code': 403, 'message': '原来的密码错误'}, status=403)
+
+
 
     def delete(self, request, pk=0):
-        user = Users.objects.get(pk=pk)
+        user = Users.objects.get(idcard=pk)
+        file = Files.objects.filter(owner=pk).all()
+        for i in list(file.values()):
+            os.remove(settings.MEDIA_ROOT + '/file/' + str(pk)+"/"+i["file"])
+        os.remove(settings.MEDIA_ROOT + '/avatar/' + str(user.avatar))
         user.delete()
+        file.delete()
         return JsonResponse({'code': 204, 'message': 'deleted'}, status=204)
 
 
@@ -111,7 +116,7 @@ class UserFiles(View):
     def dispatch(self, request, *args, **kwargs):
         return super(UserFiles, self).dispatch(request, *args, **kwargs)
 
-    def get(self, request, pk=0,subject=-1):
+    def get(self, request, pk=0, subject=-1):
         if pk:
             if str(pk) in logged_in_Users:
                 file = list(Files.objects.filter(owner=pk).all().values())
@@ -119,10 +124,10 @@ class UserFiles(View):
             else:
                 return JsonResponse({'code': 403, 'message': '请先登录'}, status=403)
         else:
-            if subject!=-1:
-                file = list(Files.objects.filter(publish=1,subject=subject).all().values())
+            if subject != -1:
+                file = list(Files.objects.filter(publish=1, subject=subject).all().values())
             else:
-                file=list(Files.objects.filter(publish=1).all().values())
+                file = list(Files.objects.filter(publish=1).all().values())
             return JsonResponse({'code': 200, 'message': 'success', 'data': file}, status=200)
 
     def post(self, request, pk=0, subject=15, description=""):
@@ -162,7 +167,6 @@ class UserFiles(View):
         else:
             return JsonResponse({'code': 403, 'message': '请先登录'}, status=403)
         return JsonResponse({'code': 200, 'message': 'updated', 'data': user_own}, status=200)
-
 
     def delete(self, request, pk=0):
         try:

@@ -21,7 +21,6 @@ from usermanage import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('user/', views.UsersView.as_view()),
     path('user/<int:pk>/', views.UsersView.as_view()),
     path('avatar/<int:pk>/', views.UserAvatars.as_view()),
     path('file/<int:pk>/<int:subject>/<str:description>/', views.UserFiles.as_view()),
