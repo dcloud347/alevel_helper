@@ -30,9 +30,6 @@ const Alevel_Footer = () =>{
                 <span style = {{marginLeft:"10px"}}>
                         寰桐阁HCC网络技术社
                     </span>
-                <a href = "https://beian.miit.gov.cn/#/Integrated/index" style={{marginLeft:"10px"}} target="_blank">
-                    #
-                </a>
             </Footer>
         </div>
     )

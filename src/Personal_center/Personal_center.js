@@ -1,16 +1,16 @@
 import React, {useState} from "react";
-import './App.less';
+import '../App.less';
 import {Layout, Menu, BackTop, Button, Row, Col, Image, Table, Modal} from 'antd';
 import {
     DesktopOutlined,
     PieChartOutlined,
     FormOutlined,
 } from '@ant-design/icons';
-import Header from './Component/Header'
-import Footer from "./Component/Footer";
+import Header from '../Component/Header'
+import Footer from "../Component/Footer";
 import option2 from "./Note";
 import Upload_Avatar from "./upload_avatar";
-import Change_password from "./Change_password";
+import Change_password from "../Change_password";
 const style = {
     height: 40,
     width: 40,
@@ -127,19 +127,19 @@ const option1 = (avatar=localStorage.getItem("avatar"))=> {
 }
 const option3 = (
     <div>
-
+        <div>
+            
+        </div>
     </div>
 )
 
 
 class Info_show extends React.Component {
-    // eslint-disable-next-line no-useless-constructor
 
     state = {
         collapsed: false,
     };
 
-    // eslint-disable-next-line no-useless-constructor
     constructor(props) {
         super(props);
         this.state = {
@@ -150,7 +150,8 @@ class Info_show extends React.Component {
             key: 1,
             anchor_show:"block",
             data_file:[],
-            data_file_publish:[]
+            data_file_publish:[],
+            data_classes:[]
         };
     };
     componentDidMount() {
@@ -259,7 +260,7 @@ class Info_show extends React.Component {
                                         我的笔记
                                     </Menu.Item>
                                     <Menu.Item key="3" icon={<PieChartOutlined/>} onClick={this.change_crumb0}>
-                                        我的评价
+                                        我的班级
                                     </Menu.Item>
                                 </Menu>
 
