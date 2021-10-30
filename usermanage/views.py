@@ -23,15 +23,15 @@ class UsersView(View):
             if user.idcard in logged_in_Users:
                 user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
                         "created_time": user.created_time
-                    , "avatar": str(user.avatar),"identity":user.identity}
+                    , "avatar": str(user.avatar), "identity": user.identity}
                 return JsonResponse({'code': 200, 'message': '登陆状态', 'data': user}, status=200)
             else:
                 user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
                         "created_time": user.created_time
-                    , "avatar": str(user.avatar),"identity":user.identity}
+                    , "avatar": str(user.avatar), "identity": user.identity}
                 return JsonResponse({'code': 200, 'message': '非登陆状态', 'data': user}, status=200)
         except Users.DoesNotExist:
-            return JsonResponse({'code': 404, 'message': '用户不存在'}, status=200)
+            return JsonResponse({'code': 404, 'message': '用户不存在'}, status=404)
 
     def post(self, request, pk=0):
         data = json.loads(request.body)
@@ -40,20 +40,23 @@ class UsersView(View):
             try:
                 user = Users.objects.get(idcard=data["idcard"])
             except Users.DoesNotExist:
-                return JsonResponse({'code': 404, 'message': '用户不存在'}, status=200)
+                return JsonResponse({'code': 404, 'message': '用户不存在'}, status=404)
             if user.password == data["password"]:
-                logged_in_Users.append(user.idcard)
+                try:
+                    b = logged_in_Users.index(user.idcard)
+                except ValueError:
+                    logged_in_Users.append(user.idcard)
                 user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
                         "created_time": user.created_time
                     , "avatar": str(user.avatar)}
                 return JsonResponse({'code': 200, 'message': '登陆成功', 'data': user}, status=200)
             else:
-                return JsonResponse({'code': 404, 'message': '账号或密码不正确'}, status=200)
+                return JsonResponse({'code': 404, 'message': '账号或密码不正确'}, status=404)
         elif pk == 2:
             try:
                 user = Users.objects.create(**data)
             except IntegrityError:
-                return JsonResponse({'code': 400, 'message': '校园卡号码已存在！'}, status=200)
+                return JsonResponse({'code': 400, 'message': '校园卡号码已存在！'}, status=400)
             user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
                     "created_time": user.created_time
                 , "avatar": str(user.avatar)}
@@ -62,8 +65,8 @@ class UsersView(View):
     def put(self, request, pk=0):
         data = json.loads(request.body)
         user = Users.objects.get(idcard=str(pk))
-        if data['password_before']==user.password:
-            setattr(user,'password',data['password'])
+        if data['password_before'] == user.password:
+            setattr(user, 'password', data['password'])
             user.save()
             user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
                     "created_time": user.created_time
@@ -72,13 +75,11 @@ class UsersView(View):
         else:
             return JsonResponse({'code': 403, 'message': '原来的密码错误'}, status=403)
 
-
-
     def delete(self, request, pk=0):
         user = Users.objects.get(idcard=pk)
         file = Files.objects.filter(owner=pk).all()
         for i in list(file.values()):
-            os.remove(settings.MEDIA_ROOT + '/file/' + str(pk)+"/"+i["file"])
+            os.remove(settings.MEDIA_ROOT + '/file/' + str(pk) + "/" + i["file"])
         os.remove(settings.MEDIA_ROOT + '/avatar/' + str(user.avatar))
         user.delete()
         file.delete()
