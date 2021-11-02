@@ -20,11 +20,11 @@ from django.urls import path
 from usermanage import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('user/<int:pk>/', views.UsersView.as_view()),
-    path('avatar/<int:pk>/', views.UserAvatars.as_view()),
-    path('file/<int:pk>/<int:subject>/<str:description>/', views.UserFiles.as_view()),
-    path('file/<int:pk>/',views.UserFiles.as_view()),
-    path('file/<int:pk>/<int:subject>/',views.UserFiles.as_view()),
-    path('file/',views.UserFiles.as_view())
+    path('api/admin/', admin.site.urls),
+    path('api/user/<int:pk>/', views.UsersView.as_view()),
+    path('api/avatar/<int:pk>/', views.UserAvatars.as_view()),
+    path('api/file/<int:pk>/<int:subject>/<str:description>/', views.UserFiles.as_view()),
+    path('api/file/<int:pk>/',views.UserFiles.as_view()),
+    path('api/file/<int:pk>/<int:subject>/',views.UserFiles.as_view()),
+    path('api/file/',views.UserFiles.as_view())
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

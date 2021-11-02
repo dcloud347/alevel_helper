@@ -6,7 +6,7 @@ from .models import Users,Files,Classes
 
 @admin.register(Users)
 class UsersAdmin(admin.ModelAdmin):
-    list_display = ('name', 'sex', 'idcard', 'created_time','password','avatar','identity')
+    list_display = ('name', 'sex', 'idcard', 'created_time','password','avatar','identity','last_logged_in','logged_in')
 
 @admin.register(Files)
 class FilesAdmin(admin.ModelAdmin):
