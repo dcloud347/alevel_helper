@@ -44,8 +44,8 @@ class Users(models.Model):
     password = models.CharField(max_length=128, verbose_name='密码')
     avatar = models.ImageField(upload_to='avatar', default="default.jpeg")
     identity = models.IntegerField(choices=INDENTITY, default=1, verbose_name='身份')
-    '''last_logged_in = models.DateTimeField(auto_now=True, verbose_name="上次登陆时间")
-    logged_in = models.IntegerField(choices=LOGGED_IN, default=0, verbose_name="登陆状态")'''
+    last_logged_in = models.DateTimeField(auto_now=True, verbose_name="上次登陆时间")
+    logged_in = models.IntegerField(choices=LOGGED_IN, default=0, verbose_name="登陆状态")
 
     def __str__(self):
         return self.name
