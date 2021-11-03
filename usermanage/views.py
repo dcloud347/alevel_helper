@@ -9,18 +9,9 @@ from django.forms.models import model_to_dict
 from django.db.utils import IntegrityError
 from .models import Users, Files
 
-import django.utils.timezone as timezone
+logged_in_Users = []
 
-def refresh ():
-    list_users = list(Users.objects.filter(logged_in=1).all().values())
-    for i in list_users:
-        f = timezone.now()-i["last_logged_in"]
-        print(f.days)
-        if f.days>=1:
-            user = Users.objects.get(pk=i["id"])
-            setattr(user,'logged_in',0)
-            user.save()
-refresh()
+
 class UsersView(View):
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
@@ -29,7 +20,7 @@ class UsersView(View):
     def get(self, request, pk=0):
         try:
             user = Users.objects.get(idcard=pk)
-            if user.logged_in == 1:
+            if user.logged_in==1:
                 user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
                         "created_time": user.created_time
                     , "avatar": str(user.avatar), "identity": user.identity}
@@ -51,8 +42,10 @@ class UsersView(View):
             except Users.DoesNotExist:
                 return JsonResponse({'code': 404, 'message': '用户不存在'}, status=404)
             if user.password == data["password"]:
-                setattr(user,'logged_in',1)
-                user.save()
+                try:
+                    b = logged_in_Users.index(user.idcard)
+                except ValueError:
+                    logged_in_Users.append(user.idcard)
                 user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
                         "created_time": user.created_time
                     , "avatar": str(user.avatar)}
@@ -71,7 +64,7 @@ class UsersView(View):
 
     def put(self, request, pk=0):
         data = json.loads(request.body.decode())
-        user = Users.objects.get(idcard=pk)
+        user = Users.objects.get(idcard=str(pk))
         if data['password_before'] == user.password:
             setattr(user, 'password', data['password'])
             user.save()
@@ -99,10 +92,9 @@ class UserAvatars(View):
         return super(UserAvatars, self).dispatch(request, *args, **kwargs)
 
     def post(self, request, pk=0):
-        user = Users.objects.get(idcard=str(pk))
-        if user.logged_in==1 :
+        if str(pk) in logged_in_Users:
             img = request.FILES.get("avatar")
-            user = Users.objects.get(idcard=pk)
+            user = Users.objects.get(idcard=str(pk))
             save_path = '{}/avatar/{}'.format(settings.MEDIA_ROOT,
                                               str(pk) + "." + img.name.split('.')[len(img.name.split('.')) - 1])
             if str(user.avatar) != "default.jpeg":
@@ -127,8 +119,7 @@ class UserFiles(View):
 
     def get(self, request, pk=0, subject=-1):
         if pk:
-            user = Users.objects.get(idcard=pk)
-            if user.logged_in==1:
+            if str(pk) in logged_in_Users:
                 file = list(Files.objects.filter(owner=pk).all().values())
                 return JsonResponse({'code': 200, 'message': 'success', 'data': file}, status=200)
             else:
@@ -141,8 +132,7 @@ class UserFiles(View):
             return JsonResponse({'code': 200, 'message': 'success', 'data': file}, status=200)
 
     def post(self, request, pk=0, subject=15, description=""):
-        user = Users.objects.get(idcard=str(pk))
-        if user.logged_in==1:
+        if str(pk) in logged_in_Users:
             files = request.FILES.get("file")
             save_path = '{}/file/{}/{}'.format(settings.MEDIA_ROOT, str(pk), files.name)
             try:
@@ -168,11 +158,9 @@ class UserFiles(View):
         data = json.loads(request.body.decode())
         try:
             file = Files.objects.get(pk=pk)
-            user = Users.objects.get(idcard=file.owner)
         except Files.DoesNotExist:
             return JsonResponse({'code': 404, 'message': '要修改的文件不存在'}, status=404)
-
-        if user.logged_in == 1:
+        if file.owner in logged_in_Users:
             for key, value in data.items():
                 setattr(file, key, value)
             file.save()
@@ -184,8 +172,7 @@ class UserFiles(View):
     def delete(self, request, pk=0):
         try:
             file = Files.objects.get(pk=pk)
-            user = Users.objects.get(idcard=file.owner)
-            if user.logged_in == 1:
+            if file.owner in logged_in_Users:
                 os.remove(settings.MEDIA_ROOT + '/file/' + file.owner + "/" + str(file.file))
                 file.delete()
             else:
