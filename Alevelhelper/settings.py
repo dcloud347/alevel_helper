@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
-
+import socket
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -23,8 +23,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '_upixtcqeno=f5%lehi441&!77scb(bi&d--+bcitakfm@h*kq'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
+if socket.gethostname() == "Mac1deMacBook-Air.local":
+    DEBUG = True
+else:
+    DEBUG = False
 ALLOWED_HOSTS = ['*']
 
 
@@ -123,9 +125,10 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
-
-STATIC_URL = '/static/'
-
+if socket.gethostname() == "Mac1deMacBook-Air.local":
+    STATIC_URL = '/static/'
+else:
+    STATIC_URL = '/static2/'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

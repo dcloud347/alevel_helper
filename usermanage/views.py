@@ -11,16 +11,20 @@ from .models import Users, Files
 
 import django.utils.timezone as timezone
 
-def refresh ():
+
+def refresh():
     list_users = list(Users.objects.filter(logged_in=1).all().values())
     for i in list_users:
-        f = timezone.now()-i["last_logged_in"]
-        print(f.days)
-        if f.days>=1:
+        f = timezone.now() - i["last_logged_in"]
+        if f.days >= 1:
             user = Users.objects.get(pk=i["id"])
-            setattr(user,'logged_in',0)
+            setattr(user, 'logged_in', 0)
             user.save()
+
+
 refresh()
+
+
 class UsersView(View):
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
@@ -51,7 +55,7 @@ class UsersView(View):
             except Users.DoesNotExist:
                 return JsonResponse({'code': 404, 'message': '用户不存在'}, status=404)
             if user.password == data["password"]:
-                setattr(user,'logged_in',1)
+                setattr(user, 'logged_in', 1)
                 user.save()
                 user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
                         "created_time": user.created_time
@@ -100,7 +104,8 @@ class UserAvatars(View):
 
     def post(self, request, pk=0):
         user = Users.objects.get(idcard=str(pk))
-        if user.logged_in==1 :
+
+        if user.logged_in == 1:
             img = request.FILES.get("avatar")
             user = Users.objects.get(idcard=pk)
             save_path = '{}/avatar/{}'.format(settings.MEDIA_ROOT,
@@ -128,7 +133,7 @@ class UserFiles(View):
     def get(self, request, pk=0, subject=-1):
         if pk:
             user = Users.objects.get(idcard=pk)
-            if user.logged_in==1:
+            if user.logged_in == 1:
                 file = list(Files.objects.filter(owner=pk).all().values())
                 return JsonResponse({'code': 200, 'message': 'success', 'data': file}, status=200)
             else:
@@ -142,7 +147,7 @@ class UserFiles(View):
 
     def post(self, request, pk=0, subject=15, description=""):
         user = Users.objects.get(idcard=str(pk))
-        if user.logged_in==1:
+        if user.logged_in == 1:
             files = request.FILES.get("file")
             save_path = '{}/file/{}/{}'.format(settings.MEDIA_ROOT, str(pk), files.name)
             try:
