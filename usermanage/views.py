@@ -110,7 +110,10 @@ class UserAvatars(View):
             save_path = '{}/avatar/{}'.format(settings.MEDIA_ROOT,
                                               str(pk) + "." + img.name.split('.')[len(img.name.split('.')) - 1])
             if str(user.avatar) != "default.jpeg":
-                os.remove(settings.MEDIA_ROOT + '/avatar/' + str(user.avatar))
+                try:
+                    os.remove(settings.MEDIA_ROOT + '/avatar/' + str(user.avatar))
+                except BaseException:
+                    pass
             with open(save_path, 'wb') as f:
                 for content in img.chunks():
                     f.write(content)
