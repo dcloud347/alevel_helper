@@ -104,7 +104,6 @@ class UserAvatars(View):
 
     def post(self, request, pk=0):
         user = Users.objects.get(idcard=str(pk))
-
         if user.logged_in == 1:
             img = request.FILES.get("avatar")
             user = Users.objects.get(idcard=pk)
@@ -191,7 +190,10 @@ class UserFiles(View):
             file = Files.objects.get(pk=pk)
             user = Users.objects.get(idcard=file.owner)
             if user.logged_in == 1:
-                os.remove(settings.MEDIA_ROOT + '/file/' + file.owner + "/" + str(file.file))
+                try:
+                    os.remove(settings.MEDIA_ROOT + '/file/' + file.owner + "/" + str(file.file))
+                except FileNotFoundError:
+                    return JsonResponse({'code': 404, 'message': '要删除的文件不存在'}, status=404)
                 file.delete()
             else:
                 return JsonResponse({'code': 403, 'message': '请先登录'}, status=403)

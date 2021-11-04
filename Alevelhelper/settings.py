@@ -127,10 +127,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 if socket.gethostname() == "Mac1deMacBook-Air.local":
     STATIC_URL = '/static/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 else:
     STATIC_URL = '/static2/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, '/usr/alevelhelper/media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = os.path.join(BASE_DIR,'static')
 MEDIA_URL = '/media/'
 
 

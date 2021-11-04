@@ -59,7 +59,7 @@ class Files(models.Model):
         (0, '私密'),
         (1, '公开')
     )
-    file = models.FileField(upload_to="file", default="Alevel_helper.docx")
+    file = models.FileField(upload_to="file", default="Alevel_helper.docx",unique=True)
     owner = models.CharField(max_length=18, verbose_name='文件拥有者校园卡号码')
     uploaded_time = models.DateTimeField(auto_now_add=True, verbose_name='上传时间')
     subject = models.IntegerField(choices=SUBJECT_ITEMS, default=15, verbose_name='学科')
