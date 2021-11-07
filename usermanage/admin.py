@@ -10,7 +10,7 @@ class UsersAdmin(admin.ModelAdmin):
 
 @admin.register(Files)
 class FilesAdmin(admin.ModelAdmin):
-    list_display = ('file','owner','uploaded_time','subject','description','publish')
+    list_display = ('file','owner','uploaded_time','subject','description','publish','publish_list')
 
 @admin.register(Classes)
 class ClassesAdmin(admin.ModelAdmin):

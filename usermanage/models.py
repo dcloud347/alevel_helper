@@ -57,7 +57,8 @@ class Users(models.Model):
 class Files(models.Model):
     PUBLISH_ITEMS = (
         (0, '私密'),
-        (1, '公开')
+        (1, '公开'),
+        (2,'对部分人公开')
     )
     file = models.FileField(upload_to="file", default="Alevel_helper.docx",unique=True)
     owner = models.CharField(max_length=18, verbose_name='文件拥有者校园卡号码')
@@ -65,8 +66,7 @@ class Files(models.Model):
     subject = models.IntegerField(choices=SUBJECT_ITEMS, default=15, verbose_name='学科')
     description = models.CharField(max_length=128, verbose_name="文件描述", default="无描述")
     publish = models.IntegerField(choices=PUBLISH_ITEMS, default=0, verbose_name='是否公开')
-    '''def __str__(self):
-        return self.name'''
+    publish_list = models.CharField(max_length=900,verbose_name="公开列表",default="")
 
     class Meta:
         verbose_name = verbose_name_plural = '文件管理'

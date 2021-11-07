@@ -5,7 +5,6 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import View
-from django.forms.models import model_to_dict
 from django.db.utils import IntegrityError
 from .models import Users, Files
 
@@ -33,18 +32,18 @@ class UsersView(View):
     def get(self, request, pk=0):
         try:
             user = Users.objects.get(idcard=pk)
-            if user.logged_in == 1:
-                user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
-                        "created_time": user.created_time
-                    , "avatar": str(user.avatar), "identity": user.identity}
-                return JsonResponse({'code': 200, 'message': '登陆状态', 'data': user}, status=200)
-            else:
-                user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
-                        "created_time": user.created_time
-                    , "avatar": str(user.avatar), "identity": user.identity}
-                return JsonResponse({'code': 200, 'message': '非登陆状态', 'data': user}, status=200)
         except Users.DoesNotExist:
             return JsonResponse({'code': 404, 'message': '用户不存在'}, status=404)
+        if user.logged_in == 1:
+            user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
+                    "created_time": user.created_time
+                , "avatar": str(user.avatar), "identity": user.identity}
+            return JsonResponse({'code': 200, 'message': '登陆状态', 'data': user}, status=200)
+        else:
+            user = {"name": user.name, "idcard": user.idcard, "sex": user.sex, "email": user.email,
+                    "created_time": user.created_time
+                , "avatar": str(user.avatar), "identity": user.identity}
+            return JsonResponse({'code': 200, 'message': '非登陆状态', 'data': user}, status=200)
 
     def post(self, request, pk=0):
         data = json.loads(request.body.decode())
@@ -137,6 +136,13 @@ class UserFiles(View):
             user = Users.objects.get(idcard=pk)
             if user.logged_in == 1:
                 file = list(Files.objects.filter(owner=pk).all().values())
+                file_partially_publish = list(Files.objects.filter(publish=2).all().values())
+                a= []
+                for i in file_partially_publish:
+                    a = i["publish_list"].split("/")
+                    if user.idcard in a:
+                        if i not in file:
+                            file.append(i)
                 return JsonResponse({'code': 200, 'message': 'success', 'data': file}, status=200)
             else:
                 return JsonResponse({'code': 403, 'message': '请先登录'}, status=403)
@@ -178,7 +184,6 @@ class UserFiles(View):
             user = Users.objects.get(idcard=file.owner)
         except Files.DoesNotExist:
             return JsonResponse({'code': 404, 'message': '要修改的文件不存在'}, status=404)
-
         if user.logged_in == 1:
             for key, value in data.items():
                 setattr(file, key, value)
@@ -203,3 +208,27 @@ class UserFiles(View):
         except Files.DoesNotExist:
             return JsonResponse({'code': 404, 'message': '文件不存在'}, status=404)
         return JsonResponse({'code': 204, 'message': 'deleted'}, status=204)
+
+
+class User_Info_Provider(View):
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super(User_Info_Provider, self).dispatch(request, *args, **kwargs)
+
+    def get(self, request, pk):
+        try:
+            user = Users.objects.get(idcard=pk)
+        except Users.DoesNotExist:
+            return JsonResponse({'code': 404, 'message': '用户不存在'}, status=404)
+        if user.logged_in == 1:
+            all_users = list(Users.objects.filter().all().values())
+            names = []
+            idcards = []
+            for i in all_users:
+                names.append(i["name"])
+                idcards.append(i["idcard"])
+            data = {"name": names, "idcard": idcards}
+            return JsonResponse({'code': 200, 'data': data}, status=200)
+        else:
+            return JsonResponse({'code': 403, 'message': '请先登录'}, status=403)
+

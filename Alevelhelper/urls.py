@@ -27,6 +27,7 @@ urlpatterns = [
     path('api/file/<int:pk>/',views.UserFiles.as_view()),
     path('api/file/<int:pk>/<int:subject>/',views.UserFiles.as_view()),
     path('api/file/',views.UserFiles.as_view()),
+    path('api/users/<int:pk>/',views.User_Info_Provider.as_view()),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 '''static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)'''
