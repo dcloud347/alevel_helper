@@ -45,7 +45,7 @@ const RegistrationForm = () => {
             'idcard':values.idcard,
             'sex':values.sex
         }
-        fetch('/user/2/', {
+        fetch('/api/user/2/', {
             method: 'post',
             body: JSON.stringify(data),
             headers:{'Content-Type': 'application/json'}

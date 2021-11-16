@@ -17,7 +17,7 @@ class G11_Home extends React.Component{
     }
 
     componentDidMount() {
-        fetch('/user/'+localStorage.getItem("idcard"), {
+        fetch('/api/user/'+localStorage.getItem("idcard"), {
             method: 'get',
             headers:{'Content-Type': 'application/json'}
         }).then(response => {

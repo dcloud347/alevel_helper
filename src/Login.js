@@ -11,7 +11,7 @@ const LoginForm = () =>{
             'idcard':values.idcard,
             "password":values.password
         }
-        fetch('/user/1/', {
+        fetch('/api/user/1/', {
             method: 'post',
             body: JSON.stringify(data),
             headers:{'Content-Type': 'application/json'}
@@ -93,7 +93,7 @@ class Login extends React.Component {
         super(props);
     }
     componentDidMount() {
-        fetch('/user/'+localStorage.getItem("idcard"), {
+        fetch('/api/user/'+localStorage.getItem("idcard"), {
             method: 'get',
             headers:{'Content-Type': 'application/json'}
         }).then(response => {

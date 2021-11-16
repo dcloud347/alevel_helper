@@ -6,21 +6,76 @@ class Upload_Form extends React.Component{
     constructor(props) {
         super(props);
         this.state = {
-            url:""
+            fileList: [],
+            uploading: false,
         }
     }
     onsubmit = (values)=>{
+        const { fileList } = this.state;
+        const formData = new FormData();
+        fileList.forEach(file => {
+            formData.append('file', file);
+        });
+        this.setState({
+            uploading: true,
+        });
+        let url;
         description = values.description
         subject = values.subject
-        description?this.setState({url:'http://localhost:8000/file/'+localStorage.getItem("idcard")+"/"+subject+"/"+description+"/"})
-            : this.setState({url:'http://localhost:8000/file/'+localStorage.getItem("idcard")+"/"+subject+"/"})
+        description?url = 'http://localhost:8000/api/file/'+localStorage.getItem("idcard")+"/"+subject+"/"+description+"/"
+            :url='http://localhost:8000/api/file/'+localStorage.getItem("idcard")+"/"+subject+"/";
+        fetch(url ,{
+            method: 'post',
+            body: formData
+        }).then(response => {
+            return response.json();
+        }).then((data)=>{
+            if(data.code===200){
+                this.setState({
+                    fileList: [],
+                    uploading: false,
+                });
+                message.success('上传成功');
+            }else if(data.code===403){
+                this.setState({
+                    uploading: false,
+                });
+                message.error('请先登录');
+            }else if(data.code===400){
+                this.setState({
+                    uploading: false,
+                });
+                message.error('文件名已经存在');
+            }
+        })
     }
     render() {
+        const { uploading, fileList } = this.state;
+        const props = {
+            onRemove: file => {
+                this.setState(state => {
+                    const index = state.fileList.indexOf(file);
+                    const newFileList = state.fileList.slice();
+                    newFileList.splice(index, 1);
+                    return {
+                        fileList: newFileList,
+                    };
+                });
+            },
+            beforeUpload: file => {
+                this.setState(state => ({
+                    fileList: [...state.fileList, file],
+                }));
+                return false;
+            },
+            fileList,
+        };
         return(
             <Form
                 name="upload"
                 onFinish={this.onsubmit}
                 scrollToFirstError
+
             >
                 <Form.Item
                     name="subject"
@@ -51,26 +106,18 @@ class Upload_Form extends React.Component{
                     <Input placeholder="文件描述(可选)" size="large"/>
                 </Form.Item>
                 <Form.Item style={{fontSize: "15px"}}>
-                    <Upload {...{
-                        name: 'file',
-                        action: this.state.url,
-                        headers: {
-                            authorization: 'authorization-text',
-                        },
-                        onChange(info) {
-                            if (info.file.status !== 'uploading') {
-                                console.log(info.file, info.fileList);
-                            }
-                            if (info.file.status === 'done') {
-                                message.success(`${info.file.name} file uploaded successfully`);
-                            } else if (info.file.status === 'error') {
-                                message.error(`${info.file.name} file upload failed.`);
-                            }
-                        },
-                    }}>
-                        <Button icon={<UploadOutlined />} type="primary" htmlType="submit"  size="large"
-                                block>上传笔记</Button>
+                    <Upload {...props} name="file" maxCount = {1} showUploadList={false}>
+                        <Button icon={<UploadOutlined />} style ={{marginLeft:"-10%"}}>上传文件</Button>
                     </Upload>
+                    <Button
+                        type="primary"
+                        disabled={fileList.length === 0}
+                        loading={uploading}
+                        style={{ marginTop: 16 }}
+                        htmlType = "submit"
+                    >
+                        {uploading ? '上传中' : '开始上传'}
+                    </Button>
                 </Form.Item>
             </Form>
 

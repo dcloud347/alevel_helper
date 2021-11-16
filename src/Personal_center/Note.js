@@ -1,6 +1,37 @@
-import {Button, Col, Row, Space, Table, message, Popconfirm, Divider} from "antd";
-import React from 'react'
+import {Button, Col, Row, Space, Table, message, Popconfirm, Divider, Modal} from "antd";
+import React, {useState} from 'react'
 import Upload_file from "./upload_file";
+import Partially_publish_Form from "./Change_partially_publish";
+
+
+const Change_public = (id) => {
+    const [isModalVisible, setIsModalVisible] = useState(false);
+
+    const showModal = () => {
+        setIsModalVisible(true);
+    };
+
+    const handleOk = () => {
+        setIsModalVisible(false);
+        window.location.reload()
+    };
+
+    const handleCancel = () => {
+        setIsModalVisible(false);
+        window.location.reload()
+    };
+
+    return (
+        <>
+            <Button onClick={showModal}>
+                部分公开
+            </Button>
+            <Modal title="部分公开" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+                <Partially_publish_Form id={id} />
+            </Modal>
+        </>
+    );
+};
 const columns_file = [
     {
         title: '文件(点击文件名下载)',
@@ -28,7 +59,7 @@ const columns_file = [
         dataIndex: 'description',
         key:'description'
     },{
-        title: '是否公开',
+        title: '是否全部公开',
         dataIndex: 'public',
         key:'public'
     },{
@@ -36,55 +67,64 @@ const columns_file = [
         dataIndex: "Action",
         key:"action",
         render: (text, record) => (
-            <Space size="middle">
-                <Popconfirm
-                    title="你确定要设置这个文件吗?"
-                    onConfirm={() =>{
-                        let data = {
-                            'publish':record.public=="私密"?1:0
-                        }
-                        fetch('/file/'+record.id+"/", {
-                            method: 'put',
-                            body:JSON.stringify(data),
-                            headers:{'Content-Type': 'application/json'}
-                        }).then(response => {
-                            return response.json();
-                        }).then((data)=>{
-                            console.log(data)
-                            if(data.code==200){
-                                message.success("设置成功!")
-                            }
-                        })
-                        window.location.reload()
-                    }}
-                    okText={record.public=="私密"?"设为公开":"设为私密"}
-                    cancelText="取消"
-                >
-                    <Button >{record.public=="私密"?"设为公开":"设为私密"}</Button>
-                </Popconfirm>
-                <Popconfirm
-                    title="你确定要删除这个文件吗?"
-                    onConfirm={() =>{
-                        fetch('/file/'+record.id+"/", {
-                            method: 'delete',
-                            headers:{'Content-Type': 'application/json'}
-                        }).then(response => {
-                            return response.json();
-                        }).then((data)=>{
-                            console.log(data)
-                            if(data.code==204){
-                                message.success("删除成功!")
-                            }
-                        })
-                        window.location.reload()
-                    }}
-                    okText="删除"
-                    cancelText="取消"
-                >
-                    <Button>删除</Button>
-                </Popconfirm>
-            </Space>
+
+            record.owner===localStorage.getItem("idcard")?(
+                    <Space size="middle">
+                        <Popconfirm
+                            title="你确定要设置这个文件吗?"
+                            onConfirm={() =>{
+                                let data = {
+                                    'publish':record.public=="私密"?1:0
+                                }
+                                fetch('/api/file/'+record.id+"/", {
+                                    method: 'put',
+                                    body:JSON.stringify(data),
+                                    headers:{'Content-Type': 'application/json'}
+                                }).then(response => {
+                                    return response.json();
+                                }).then((data)=>{
+                                    console.log(data)
+                                    if(data.code==200){
+                                        message.success("设置成功!")
+                                    }
+                                })
+                                window.location.reload()
+                            }}
+                            okText={record.public=="私密"?"设为全部公开":"设为私密"}
+                            cancelText="取消"
+                        >
+                            <Button >{record.public=="私密"?"设为全部公开":"设为私密"}</Button>
+                        </Popconfirm>
+                        <Popconfirm
+                            title="你确定要删除这个文件吗?"
+                            onConfirm={() =>{
+                                fetch('/api/file/'+record.id+"/", {
+                                    method: 'delete',
+                                    headers:{'Content-Type': 'application/json'}
+                                }).then(response => {
+                                    return response.json();
+                                }).then((data)=>{
+                                    console.log(data)
+                                    if(data.code==204){
+                                        message.success("删除成功!")
+                                    }
+                                })
+                                window.location.reload()
+                            }}
+                            okText="删除"
+                            cancelText="取消"
+                        >
+                            <Button>删除</Button>
+                        </Popconfirm>
+                        <Change_public id = {record.id} />
+                    </Space>
+                ):""
         ),
+    },
+    {
+        title:"部分公开列表",
+        dataIndex: "publish_list",
+        key:"publish_list"
     }
 ];
 const columns_file_publish = [
@@ -116,6 +156,7 @@ const columns_file_publish = [
         key: 'description'
     }
 ];
+
 const subject = (key) =>{
     switch (key) {
         case 0 :
@@ -177,7 +218,8 @@ const option2 = (data_file,data_file_publish)=>{
             subject:subject(data_file[i]["subject"]),
             description:data_file[i]["description"],
             public:public_(data_file[i]["publish"]),
-            id:data_file[i]["id"]
+            id:data_file[i]["id"],
+            publish_list: data_file[i]["publish_list"]
         });
     }
     for (let a = 0; a < data_file_publish.length; a++) {
@@ -212,7 +254,7 @@ const option2 = (data_file,data_file_publish)=>{
                 <Divider />
                 <Row>
                     <Col span = {4} push = {10} style = {{marginTop:"5%"}}>
-                        <h1 style={{textAlign:"center",fontSize:"23px"}}>公开的文件</h1>
+                        <h1 style={{textAlign:"center",fontSize:"23px"}}>部分公开的文件</h1>
                     </Col>
                 </Row>
                 <Row>

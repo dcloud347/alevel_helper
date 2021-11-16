@@ -10,13 +10,12 @@ import note1 from "./statics/image/note.jpg";
 import Footer from "./Component/Footer";
 class Home extends React.Component{
     componentDidMount() {
-        fetch('/user/'+localStorage.getItem("idcard"), {
+        fetch('/api/user/'+localStorage.getItem("idcard"), {
             method: 'get',
             headers:{'Content-Type': 'application/json'}
         }).then(response => {
             return response.json();
         }).then((data)=>{
-            console.log(data)
             if(data.code==200){
                 localStorage.setItem("idcard",data.data.idcard)
                 localStorage.setItem("avatar",data.data.avatar)
@@ -33,7 +32,6 @@ class Home extends React.Component{
             }else if(data.code===404){
                 localStorage.clear()
             }
-            //this.forceUpdate()
     })
     }
 

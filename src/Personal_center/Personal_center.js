@@ -25,11 +25,11 @@ const {Content, Sider} = Layout;
 const sex = ()=>{
     switch (localStorage.getItem("sex")) {
         case "0":
-            return "未知";
+            return "女";
         case "1":
             return "男";
         case "2":
-            return "女";
+            return "未知";
 
     }
 }
@@ -155,7 +155,7 @@ class Info_show extends React.Component {
         };
     };
     componentDidMount() {
-        fetch('/user/'+localStorage.getItem("idcard"), {
+        fetch('/api/user/'+localStorage.getItem("idcard"), {
             method: 'get',
             headers:{'Content-Type': 'application/json'}
         }).then(response => {
@@ -178,7 +178,7 @@ class Info_show extends React.Component {
                 localStorage.clear()
             }
         })
-        fetch('/file/'+localStorage.getItem("idcard")+"/", {
+        fetch('/api/file/'+localStorage.getItem("idcard")+"/", {
             method: 'get',
             headers:{'Content-Type': 'application/json'}
         }).then(response => {
@@ -186,13 +186,12 @@ class Info_show extends React.Component {
         }).then((data)=>{
             this.setState({data_file:data.data})
         })
-        fetch('/file/', {
+        fetch('/api/file/', {
             method: 'get',
             headers:{'Content-Type': 'application/json'}
         }).then(response => {
             return response.json();
         }).then((data)=>{
-            console.log(data)
             this.setState({data_file_publish:data.data})
         })
     }

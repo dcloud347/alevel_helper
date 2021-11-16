@@ -10,7 +10,7 @@ const Change_password_Form = () =>{
             'password_before':values.password_before,
             "password":values.password
         }
-        fetch('/user/'+localStorage.getItem("idcard")+"/", {
+        fetch('/api/user/'+localStorage.getItem("idcard")+"/", {
             method: 'put',
             body: JSON.stringify(data),
             headers:{'Content-Type': 'application/json'}
